@@ -1,0 +1,27 @@
+train:
+  precision: 'bf16-mixed' # grid is too large to fit in fp32
+  epochs: 1000
+  batch_size: 1
+  lr: 0.0003
+  lr_patience: 100
+  lr_warmup: 10
+  lr_scheduler: 'plateau'
+model:
+  hidden_size: 80
+  edge_hidden: 16                
+  num_layers: 6
+  norm: 'ln' 
+  input_residual: True
+  add_transpose: True
+  use_relative_blockid: True
+  use_absolute_blockid: False
+  batched_sequential: True
+diffusion:
+  max_hops: 1
+  num_steps: 20 
+  noise_schedule_type: 'cosine'
+  ce_only: False 
+  ce_coeff: 0.1
+  uniform_noise: True    
+  blockwise_time: False    
+  combine_training: False 

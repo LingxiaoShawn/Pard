@@ -1,0 +1,10 @@
+train:
+  epochs: 1000
+  batch_size: 512
+  lr: 0.0005
+  lr_patience: 100
+model:
+  hidden_size: 128                   
+  num_layers: 6  
+diffusion:
+  num_steps: 40      

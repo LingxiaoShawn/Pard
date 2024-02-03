@@ -1,0 +1,6 @@
+train:
+  epochs: 300
+  batch_size: 128
+  lr: 0.001
+  lr_patience: 50
+

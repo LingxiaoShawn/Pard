@@ -1,0 +1,26 @@
+train:
+  epochs: 100
+  batch_size: 128
+  lr: 0.0004
+  lr_patience: 10
+  lr_warmup: 5
+  lr_scheduler: 'cosine'
+model:
+  hidden_size: 256 # 128                   
+  num_layers: 8  
+  extra_feature: True
+  encode_block: True
+  input_residual: True
+  add_transpose: True
+  edge_hidden: 64
+  norm: 'bn'
+  use_relative_blockid: True
+  use_absolute_blockid: True
+diffusion:
+  num_steps: 50
+  ce_only: False
+  ce_coeff: 0.1
+  no_virtual_type: True 
+  uniform_noise: True    
+  blockwise_time: False   
+  combine_training: False       

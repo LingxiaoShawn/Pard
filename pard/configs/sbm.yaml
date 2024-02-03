@@ -1,0 +1,16 @@
+train:
+  epochs: 300
+  batch_size: 24 # batch size is too small, need to use LN 
+  lr: 0.0002
+  lr_patience: 20
+model:
+  hidden_size: 128                   
+  num_layers: 6 
+  norm: 'ln' 
+  extra_feature: True
+  encode_block: True
+diffusion:
+  num_steps: 40   
+  ce_only: False  
+  no_virtual_type: True
+  uniform_noise: True

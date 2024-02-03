@@ -1,0 +1,27 @@
+device: 0
+train:
+  epochs: 40       # preivous 50  (for denoising)   
+  batch_size: 128  # preivous 128                            ### 64 if use 2 device
+  lr: 0.0002       # previous 0.0002
+  lr_patience: 5
+  lr_warmup: 0
+  lr_scheduler: 'cosine' # previous: 'plateau'
+model:
+  hidden_size: 256   
+  edge_hidden: 64                
+  num_layers: 8
+  norm: 'bn' 
+  input_residual: True
+  add_transpose: True
+  use_relative_blockid: True
+  use_absolute_blockid: True
+  batched_sequential: False
+diffusion:
+  num_steps: 50
+  max_hops: 3
+  noise_schedule_type: 'cosine'
+  ce_only: False
+  ce_coeff: 0.1
+  uniform_noise: True    
+  blockwise_time: False   
+  combine_training: False   ## previous True for saving time 

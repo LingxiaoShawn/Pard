@@ -1,0 +1,30 @@
+dataset: 'planar'
+train:
+  epochs: 200
+  batch_size: 4
+  lr: 0.0001
+  lr_patience: 10
+  lr_warmup: 4
+  lr_scheduler: 'cosine'
+model:
+  hidden_size: 150   
+  edge_hidden: 0                
+  num_layers: 6
+  norm: 'ln' 
+  input_residual: True
+  extra_feature: True
+  encode_block: True
+  add_transpose: True
+  use_relative_blockid: True
+  use_absolute_blockid: False
+  batched_sequential: True
+diffusion:
+  max_hops: 1
+  num_steps: 50 
+  noise_schedule_type: 'cosine'
+  ce_only: False 
+  ce_coeff: 0.1
+  no_virtual_type: True
+  uniform_noise: True    
+  blockwise_time: False    
+  combine_training: False 
