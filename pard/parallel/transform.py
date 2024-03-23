@@ -7,6 +7,58 @@ from .utils import get_causal_block_mask
 import torch.nn.functional as F
 from torch_geometric.data.collate import collate
 
+
+class ToOneHot:
+    # TODO: currently only work for single-label node feature and edge feature, 
+    # later to generalize to mult-label features, need to have a encode map to combne multi-label to single label
+    def __init__(self, num_node_features:int, 
+                       num_edge_features:int, 
+                       virtual_node_type:False, 
+                       virtual_edge_type:False,
+                       has_zero_edgetype:bool=True):
+        self.add_virtual_node = virtual_node_type
+        self.add_virtual_edge = virtual_edge_type
+        self.num_node_features = num_node_features 
+        self.num_edge_features = num_edge_features
+        self.has_zero_edgetype = has_zero_edgetype
+
+    @property
+    def num_node_classes(self):
+        return self.num_node_features + int(self.add_virtual_node)
+    @property
+    def num_edge_classes(self):
+        return self.num_edge_features + int(self.add_virtual_edge) + int(self.has_zero_edgetype)
+
+    def __call__(self, data:Data):
+        if data.x is None:
+            assert self.num_node_features <= 1
+            num_nodes = data.edge_index.max() + 1 if not hasattr(data, 'block') else data.block.size(0)
+            data.x = torch.zeros(num_nodes, 1, dtype=torch.long)
+            self.num_node_features = 1
+
+        # assert data.x.size(-1) == self.num_node_features, (data.x.size(-1), self.num_node_features)
+        x = data.x if data.x.dim() == 1 else data.x.squeeze(1)
+        data.x = torch.nn.functional.one_hot(x, num_classes=self.num_node_classes).float()
+
+        if data.edge_attr is None:
+            assert self.num_edge_features <= 1
+            data.edge_attr = torch.zeros(data.num_edges, 1, dtype=torch.long)
+            self.num_edge_features = 1
+            self.has_zero_edgetype = True
+
+        # assert data.edge_attr.size(-1) == self.num_edge_features, (data.edge_attr.size(-1), self.num_edge_features)
+        edge_attr = data.edge_attr if data.edge_attr.dim() == 1 else data.edge_attr.squeeze(1)
+
+        if not self.has_zero_edgetype and data.num_edges > 0:
+            assert data.edge_attr.min() > 0, (data.edge_attr.max(), data.edge_attr.min())
+
+        data.edge_attr = torch.nn.functional.one_hot(int(self.has_zero_edgetype) + edge_attr, num_classes=self.num_edge_classes).float()
+        ### 1. For edge_attr, 0 means disconnected edges, 1 means connected edges, and 2+ means different edge types. 
+        ### 2. The last type is virtual type for both node and edge.
+
+        return data
+
+
 def compute_higher_order_degrees(edge_index, num_nodes, num_hops=2):
     """
     TODO: can even support subgraph level check, by using AI, where A is sparse matrix of edge_index, I is identity matrix.

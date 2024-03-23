@@ -1,13 +1,13 @@
 import warnings
 warnings.filterwarnings('ignore')
 import os 
-from LocalDiffusion.parallel.utils import find_checkpoint_with_lowest_val_loss
-from LocalDiffusion.parallel.task import AutoregressiveDiffusion, PredictBlockProperties
-from LocalDiffusion.dataset import DATA_INFO
+from pard.parallel.utils import find_checkpoint_with_lowest_val_loss
+from pard.parallel.task import AutoregressiveDiffusion, PredictBlockProperties
+from pard.dataset import DATA_INFO
 from torch_geometric.loader import DataLoader
-from LocalDiffusion.analysis.spectre_utils import SpectreSamplingMetrics
-from LocalDiffusion.analysis.rdkit_functions import BasicMolecularMetrics
-from LocalDiffusion.utils import from_batch_onehot_to_list
+from pard.analysis.spectre_utils import SpectreSamplingMetrics
+from pard.analysis.rdkit_functions import BasicMolecularMetrics
+from pard.utils import from_batch_onehot_to_list
 from moses.metrics.metrics import get_all_metrics
 import logging
 import numpy as np

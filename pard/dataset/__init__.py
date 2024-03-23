@@ -8,7 +8,7 @@ from.zinc250k import ZINC250k
 
 from torch_geometric.datasets import ZINC
 
-from LocalDiffusion.analysis.spectre_utils import EMDSamplingMetrics, SBMSamplingMetrics, PlanarSamplingMetrics, MMDSamplingMetrics
+from pard.analysis.spectre_utils import EMDSamplingMetrics, SBMSamplingMetrics, PlanarSamplingMetrics, MMDSamplingMetrics
 
 
 

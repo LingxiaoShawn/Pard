@@ -30,6 +30,7 @@ pip install lightning
 # install other packages
 pip install yacs tensorboard
 pip install pyemd pygsp
+pip install einops
 
 
 pip install molsets # hard to install, better to just go the github and install manually

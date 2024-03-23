@@ -4,17 +4,17 @@ import torch
 import lightning as L
 import os, sys
 from tqdm import tqdm
-from LocalDiffusion.config import cfg, update_cfg
-from LocalDiffusion.dataset import DATA_INFO
-from LocalDiffusion.parallel.transform import ToParallelBlocks
-from LocalDiffusion.transform import ToOneHot
-from LocalDiffusion.parallel.task import PredictBlockProperties, AutoregressiveDiffusion
-import LocalDiffusion.parallel.utils as parallel_utils
+from pard.config import cfg, update_cfg
+from pard.dataset import DATA_INFO
+from pard.parallel.transform import ToParallelBlocks
+from pard.parallel.transform import ToOneHot
+from pard.parallel.task import PredictBlockProperties, AutoregressiveDiffusion
+import pard.parallel.utils as parallel_utils
 
 
 # --------------------------------------- input --------------------------------------------
 dataset_name = sys.argv[sys.argv.index('dataset')+1]
-cfg.merge_from_file(f'LocalDiffusion/configs/{dataset_name}.yaml')
+cfg.merge_from_file(f'pard/configs/{dataset_name}.yaml')
 cfg = update_cfg(cfg)
 cfg.dataset = dataset_name.split('-')[0]
 if isinstance(cfg.device, int):
