@@ -59,9 +59,12 @@ train_vali = datasets['train'] + datasets['val']
 
 #### problem: computing all these dataset statistics is time-consuming for large datasets
 node_dist, edge_dist = parallel_utils.get_node_edge_marginal_distribution(train_vali)
-init_size_dist, init_degree_dist, max_num_blocks = parallel_utils.get_init_block_size_degree_marginal_distrbution(train_vali)
+init_size_dist, init_degree_dist, list_num_blocks = parallel_utils.get_init_block_size_degree_marginal_distrbution(train_vali)
+max_num_blocks, mean_num_blocks = max(list_num_blocks), sum(list_num_blocks)/len(list_num_blocks)
 max_block_size, max_block_degree = len(init_size_dist), len(init_degree_dist)
 print(f'Number of blocks: {max_num_blocks}, max block size: {max_block_size}, max block degree: {max_block_degree}')
+print(f'Average number of blocks in training set: {mean_num_blocks}, Average total diffusion steps: {mean_num_blocks*cfg.diffusion.num_steps}')
+
 # --------------------------------------- loader --------------------------------------------
 from torch_geometric.loader import DataLoader
 loaders = {

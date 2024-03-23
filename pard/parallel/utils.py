@@ -41,6 +41,7 @@ def get_init_block_size_degree_marginal_distrbution(dataset):
     # assume max_block_size and max_block_degree are smaller than 200
     init_size_freq = torch.zeros(200) 
     init_degree_freq = torch.zeros(200)
+    list_num_blocks = [] 
     for data in dataset:
         block_size = data.block_size
         block_degree = data.block_degree
@@ -49,7 +50,8 @@ def get_init_block_size_degree_marginal_distrbution(dataset):
             last_graph_idx = (data.block_batch == data.block_batch.max())
             block_size = block_size[last_graph_idx]
             block_degree = block_degree[last_graph_idx]
-        max_num_blocks = max(max_num_blocks, block_size.size(0))
+        list_num_blocks.append(block_size.size(0))
+        # max_num_blocks = max(max_num_blocks, block_size.size(0))
         max_block_size = max(max_block_size, block_size.max())
         max_block_degree = max(max_block_degree, block_degree.max())
         init_size_freq[block_size[0]] += 1  # only record the marginal distribution of the first block 
@@ -58,7 +60,7 @@ def get_init_block_size_degree_marginal_distrbution(dataset):
     max_block_degree += 1 # include the 0 case
     init_size_dist = init_size_freq[:max_block_size] / init_size_freq.sum()
     init_degree_dist = init_degree_freq[:max_block_degree] / init_degree_freq.sum()
-    return init_size_dist, init_degree_dist, max_num_blocks
+    return init_size_dist, init_degree_dist, list_num_blocks
     
 def get_last_target_block_mask(block_id, virtual_node_mask, lower_triangular_only=False, causal=True):
     # batched_block: B x N_max or  N_max
