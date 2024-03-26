@@ -70,10 +70,11 @@ from torch_geometric.loader import DataLoader
 loaders = {
     split:  DataLoader(
                 datasets[split], 
-                batch_size=cfg.train.batch_size, 
+                batch_size=cfg.train.batch_size if split=='train' else cfg.train.batch_size * 4, 
                 shuffle=True if split=='train' else False, 
                 num_workers=cfg.num_workers,
                 pin_memory=True, # turn off if needs more memory on GPUs, but may slow down training without lower GPU usage 
+                persistent_workers=True, # turn on to avoid kill loaders after each epoch 
             )
     for split in ['train', 'val', 'test']
 }
