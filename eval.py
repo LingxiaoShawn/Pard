@@ -11,7 +11,9 @@ from pard.utils import from_batch_onehot_to_list
 from moses.metrics.metrics import get_all_metrics
 import logging
 import numpy as np
+import torch
 
+torch.set_num_threads(20)
 
 def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, eval_mode='best', batch_size=128):
     assert eval_mode in ['best', 'last', 'all']
@@ -116,11 +118,11 @@ if __name__ == '__main__':
     # blocksize_model_dir = 'checkpoints/block_prediction/planar.1hops.ppgnTrans.BlockID01.ln.PreNorm=1.H256.E32.L10-lr0.0001.plateau/'
     # diffusion_model_dir = 'checkpoints/local_denoising/planar.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H256.E32.L10-lr0.0002.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
 
-    # device = 0
-    # dataset = 'qm9'
-    # batch_size = 1024
-    # blocksize_model_dir = 'checkpoints/block_prediction/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
-    # diffusion_model_dir = 'checkpoints/local_denoising/qm9.3hops.ppgnTrans.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
+    device = 5
+    dataset = 'qm9'
+    batch_size = 1024
+    blocksize_model_dir = 'checkpoints/block_prediction/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
+    diffusion_model_dir = 'checkpoints/local_denoising/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T100.cosine.vlb1.ce0.1.combine=False'
 
     # device = 0
     # dataset = 'zinc250k'
@@ -128,12 +130,12 @@ if __name__ == '__main__':
     # blocksize_model_dir = 'checkpoints/block_prediction/zinc250k.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
     # diffusion_model_dir = 'checkpoints/local_denoising/zinc250k.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
 
-    device = 4
-    dataset = 'moses'
-    batch_size = 2048 # 10 passes
-    blocksize_model_dir = 'checkpoints/block_prediction/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine/' 
-    # diffusion_model_dir = 'checkpoints/local_denoising/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0002.plateau-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=True/'
-    diffusion_model_dir = 'checkpoints/local_denoising/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0002.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False.resume/'
+    # device = 4
+    # dataset = 'moses'
+    # batch_size = 2048 # 10 passes
+    # blocksize_model_dir = 'checkpoints/block_prediction/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine/' 
+    # # diffusion_model_dir = 'checkpoints/local_denoising/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0002.plateau-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=True/'
+    # diffusion_model_dir = 'checkpoints/local_denoising/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0002.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False.resume/'
 
-    eval_mode = 'last'
+    eval_mode = 'best'
     eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir, eval_mode, batch_size=batch_size)

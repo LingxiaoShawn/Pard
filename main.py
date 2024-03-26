@@ -73,7 +73,7 @@ loaders = {
                 batch_size=cfg.train.batch_size, 
                 shuffle=True if split=='train' else False, 
                 num_workers=cfg.num_workers,
-                # pin_memory=True, # turn off if needs more memory on GPUs
+                pin_memory=True, # turn off if needs more memory on GPUs, but may slow down training without lower GPU usage 
             )
     for split in ['train', 'val', 'test']
 }

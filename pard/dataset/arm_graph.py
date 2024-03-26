@@ -1,11 +1,12 @@
 import torch
 import pickle
 import os.path as osp
-from torch_geometric.data import InMemoryDataset
+from torch_geometric.data import InMemoryDataset, download_url
 from torch_geometric.utils import from_networkx
 import shutil, os 
 
 class ARMDataset(InMemoryDataset):
+    enyzme_url = 'https://raw.githubusercontent.com/harryjo97/GDSS/master/data/ENZYMES.pkl'
     def __init__(self, dataset_name, root='data/ARM', split='train', transform=None, pre_transform=None):
         self.name = dataset_name
         self.split = split
@@ -21,9 +22,15 @@ class ARMDataset(InMemoryDataset):
         return f'{self.name}_{self.split}.pt' 
     
     def download(self):
-        print('Copying files from source path ...')
-        src = os.path.join(self.root, os.pardir, f"{self.name}.pkl")
-        shutil.copyfile(src, self.raw_paths[0])
+        if self.name == 'ENZYMES':
+            print(f'Downloading ENZYMES dataset ... to {self.raw_paths[0]}')
+            src = ARMDataset.enyzme_url
+            download_url(src, self.raw_dir)
+            # TODO: the format is not correct, GDSS dataset is not aligning with ARM. 
+        else:
+            print('Copying files from source path ...')
+            src = os.path.join(self.root, os.pardir, f"{self.name}.pkl")
+            shutil.copyfile(src, self.raw_paths[0])
 
     def process(self):
         # Read data into huge `Data` list. 

@@ -9,7 +9,7 @@ def set_cfg(cfg):
     cfg.dataset = 'zinc'
     cfg.task = 'local_denoising'
     # Additional num of worker for data loading
-    cfg.num_workers = 8
+    cfg.num_workers = 16
     # Cuda device number, used for machine with multiple gpus
     cfg.device = None
     # Additional string add to logging 

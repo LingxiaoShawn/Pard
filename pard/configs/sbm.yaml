@@ -10,6 +10,7 @@ model:
   extra_feature: True
   encode_block: True
 diffusion:
+  max_hops: 1
   num_steps: 40   
   ce_only: False  
   no_virtual_type: True
