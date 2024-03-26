@@ -80,7 +80,7 @@ class ToParallelBlocks:
         self.to_sequential_list = to_batched_sequential # this avoid save all graphs as a new dataset, but this increase the true number of batch size
         self.add_virtual_edges = False
 
-    def __call__(self, graph):
+    def __call__(self, graph, only_return_blockid=False):
         has_attr = True if hasattr(graph, 'edge_attr') else None # True or None
 
         # Get block id based on weighted degree
@@ -106,7 +106,11 @@ class ToParallelBlocks:
         block_id = block_id.max() - block_id # start from 0
         block_degree = torch.tensor(block_degree[::-1]).long() # (num_blocks)
         block_size = torch.tensor(block_size[::-1]).long()     # (num_blocks)
-        # Sort blocks nodes
+        if only_return_blockid:
+            graph.node_block_id = block_id
+            return graph
+
+        # Sort blocks nodes based on block id 
         block_id, sorted_nodes = block_id.sort()
         node_mapping = nodes.clone()
         node_mapping[sorted_nodes] = nodes

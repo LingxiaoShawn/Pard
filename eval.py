@@ -7,7 +7,7 @@ from pard.dataset import DATA_INFO
 from torch_geometric.loader import DataLoader
 from pard.analysis.spectre_utils import SpectreSamplingMetrics
 from pard.analysis.rdkit_functions import BasicMolecularMetrics
-from pard.utils import from_batch_onehot_to_list
+from pard.utils import from_batch_onehot_to_list, check_block_id_train_vs_generation
 from moses.metrics.metrics import get_all_metrics
 import logging
 import numpy as np
@@ -15,7 +15,7 @@ import torch
 
 torch.set_num_threads(20)
 
-def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, eval_mode='best', batch_size=128):
+def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, eval_mode='best', batch_size=128, train_max_hops=3):
     assert eval_mode in ['best', 'last', 'all']
     logging.basicConfig(filename=os.path.join(diffusion_model_dir, 'generation_metric.log'), encoding='utf-8', level=logging.DEBUG)
     ### load dataset
@@ -75,6 +75,7 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
         if eval_batch_size > num_eval_samples:
             eval_batch_size = num_eval_samples
         dense_graph_list = []
+        block_id_same_with_training = []
 
         while num_eval_samples > 0:
             try:
@@ -85,9 +86,16 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
                 success = False
                 continue
             if success:
+                generated_batch = generated_batch.cpu()
                 dense_graph_list.extend(from_batch_onehot_to_list(generated_batch.nodes, generated_batch.edges))
                 num_eval_samples -= eval_batch_size
-
+                # check block id same with training or not 
+                block_id_same_with_training.extend(check_block_id_train_vs_generation(generated_batch.nodes, 
+                                                                                      generated_batch.edges,
+                                                                                      generated_batch.nodes_blockid,
+                                                                                      train_max_hops=train_max_hops))
+        logging.info(f'Percentage of graphs that have the same generation block path as training block path: 
+                      {100*sum(block_id_same_with_training) / len(block_id_same_with_training)} %')
         print('Evaluating ...')
         ### evaluate 
         if atom_decoder is None:
@@ -120,6 +128,7 @@ if __name__ == '__main__':
 
     device = 5
     dataset = 'qm9'
+    train_max_hops = 3
     batch_size = 1024
     blocksize_model_dir = 'checkpoints/block_prediction/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
     diffusion_model_dir = 'checkpoints/local_denoising/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T100.cosine.vlb1.ce0.1.combine=False'
@@ -138,4 +147,4 @@ if __name__ == '__main__':
     # diffusion_model_dir = 'checkpoints/local_denoising/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0002.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False.resume/'
 
     eval_mode = 'best'
-    eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir, eval_mode, batch_size=batch_size)
+    eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir, eval_mode, batch_size=batch_size, train_max_hops=train_max_hops)

@@ -64,7 +64,7 @@ def plot_pgy_graphs(data_list, node_size=20, edge_size=0.2, layout='spring', nod
     return plot_nx_graphs(G_list, node_size, edge_size, layout, node_attr, edge_attr, block)
 
 
-def from_dense_to_spase_graph(nodes, edges, blocks=None):
+def from_batch_onehot_to_pyg_list(nodes, edges, blocks=None):
     # step 1: extract node features 
     node_mask = nodes.sum(-1) == 1
     batch_idx, node_idx = node_mask.nonzero(as_tuple=True)
@@ -75,12 +75,12 @@ def from_dense_to_spase_graph(nodes, edges, blocks=None):
     edge_mask = edge_mask & (edges[:,:,:,0]==0) # 0th position being 0 indicate connection
     edge_batch, edge_index_left, edge_index_right = edge_mask.nonzero(as_tuple=True)
     # create graph attri
-    edge_attr = edges[edge_batch, edge_index_left, edge_index_right][:,1:]
+    edge_attr = edges[edge_batch, edge_index_left, edge_index_right] #[:,1:]
 
     if blocks is not None:
-        # step 3: extrac block ## TODO: also mark the node in last block as red
-        last_block_mask = (blocks == blocks.max(dim=-1, keepdim=True)[0])
-        block_row_idx, block_col_idx = last_block_mask.nonzero(as_tuple=True)
+        notpadding = (blocks >= 0) # B x Nmax
+        block_row_idx, block_col_idx = notpadding.nonzero(as_tuple=True)
+        block_id = blocks[block_row_idx, block_col_idx]
 
     data_list = []
     for i in range(nodes.size(0)):
@@ -90,16 +90,21 @@ def from_dense_to_spase_graph(nodes, edges, blocks=None):
         edge_attr_i = edge_attr[edge_idx]
         # transform x and edge_attr from one-hot to integer for networkx
         x_i = x_i.argmax(-1)
-        edge_attr_i = edge_attr_i.argmax(-1)
-        if blocks is not None:
-            block = torch.zeros_like(x_i)
-            block_idx = block_col_idx[block_row_idx==i]
-            block[block_idx] = 1 
-        else:
-            block = None
-        data_list.append(Data(x=x_i, edge_index=edge_index_i, edge_attr=edge_attr_i, block=block))
+        edge_attr_i = edge_attr_i.argmax(-1) # here 0 is disconnected, hence edge label starting from always starting from 1. This is align with ToOneHot
+        block_id_i = block_id[block_row_idx==i] if blocks is not None else None
+        data_list.append(Data(x=x_i, edge_index=edge_index_i, edge_attr=edge_attr_i, block_id=block_id_i))
+        
     return data_list
 
+from pard.parallel.transform import ToParallelBlocks
+from functools import partial
+def check_block_id_train_vs_generation(generated_nodes, generated_edges, generated_blocks, train_max_hops=3):
+    data_list = from_batch_onehot_to_pyg_list(generated_nodes, generated_edges, generated_blocks)
+    transform = ToParallelBlocks(max_hops=train_max_hops)
+    transform = partial(transform, only_return_blockid=True)
+    data_list = [transform(data) for data in data_list]
+    equal = [(g.block_id == g.node_block_id).all().int().item() for g in data_list]
+    return equal
 
 def from_batch_onehot_to_list(nodes, edges):
     # this is the format needed by metrics from DiGress
