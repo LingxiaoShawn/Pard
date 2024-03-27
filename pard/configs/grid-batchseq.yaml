@@ -1,11 +1,11 @@
 train:
   precision: 'bf16-mixed' # grid is too large to fit in fp32
-  epochs: 1000
+  epochs: 700
   batch_size: 1
   lr: 0.0002
-  lr_patience: 150
+  lr_patience: 100
   lr_warmup: 0
-  lr_scheduler: 'plateau'
+  lr_scheduler: 'cosine'
 model:
   hidden_size: 96
   edge_hidden: 16                

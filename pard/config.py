@@ -27,6 +27,7 @@ def set_cfg(cfg):
     cfg.train = CN()
     cfg.train.precision = '32-true' # default training precision 
     cfg.train.resume = False # try to resume from the last checkpoint
+    cfg.train.resume_mode = 'best' # best or last
     # Total graph mini-batch size
     cfg.train.batch_size = 512
     # Maximal number of epochs

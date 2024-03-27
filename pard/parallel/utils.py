@@ -162,7 +162,7 @@ def blockwise_node_aggregation(node, block_id, virtual_mask, cumsum=True):
 
     block_mask = torch.arange(num_real_blocks.max(), device=node.device).unsqueeze(0) < num_real_blocks.unsqueeze(-1) # B x max_num_real_block
     
-    real_block_agg = torch.zeros(node.shape[0], num_real_blocks.max(), node.shape[-1], device=node.device)
+    real_block_agg = torch.zeros(node.shape[0], num_real_blocks.max(), node.shape[-1], device=node.device).to(node.dtype) # B x max_num_real_block x C
     real_block_agg[block_mask] = scatter_add(node[real_block_mask], new_block_id[real_block_mask], dim=0)             # B x max_num_real_block x C
 
     # add nodes from eariler blocks

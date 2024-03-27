@@ -186,8 +186,12 @@ checkpoint_callback = ModelCheckpoint(dirpath=f"checkpoints/{cfg.task}/{model_na
 # check whether resume training
 resume_path = None
 if cfg.train.resume:
+    best_checkpoint_path = parallel_utils.find_checkpoint_with_lowest_val_loss(checkpoint_callback.dirpath)
     last_checkpoint_path = os.path.join(checkpoint_callback.dirpath, 'last.ckpt') 
-    if os.path.exists(last_checkpoint_path):
+    if os.path.exists(best_checkpoint_path) and cfg.train.resume_mode == 'best':
+        print(f'Resume training from {best_checkpoint_path}...')
+        resume_path = best_checkpoint_path
+    elif os.path.exists(last_checkpoint_path) and cfg.train.resume_mode == 'last':
         print(f'Resume training from {last_checkpoint_path}...')
         resume_path = last_checkpoint_path
     else:

@@ -1,11 +1,11 @@
 train:
   precision: 'bf16-mixed' # grid is too large to fit in fp32
-  epochs: 1000
+  epochs: 700
   batch_size: 2
   lr: 0.0003
-  lr_patience: 150
+  lr_patience: 100
   lr_warmup: 0
-  lr_scheduler: 'plateau'
+  lr_scheduler: 'cosine'
 model:
   hidden_size: 256   
   edge_hidden: 48                
@@ -21,6 +21,6 @@ diffusion:
   noise_schedule_type: 'cosine'
   ce_only: False 
   ce_coeff: 0.1
-  uniform_noise: False    
+  uniform_noise: True    
   blockwise_time: False    
   combine_training: False 
