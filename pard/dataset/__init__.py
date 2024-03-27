@@ -62,6 +62,7 @@ DATA_INFO = {
         'start_edge_type': 0,     
         'default_args': {'type': 'grid', 'root': 'data'},
         'metric_class': MMDSamplingMetrics,
+        'num_eval_generation': 64,
     },
     'planar':{
         'class': SpectreGraphDataset,

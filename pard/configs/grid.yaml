@@ -1,8 +1,8 @@
 train:
   precision: 'bf16-mixed' # grid is too large to fit in fp32
   epochs: 700
-  batch_size: 2
-  lr: 0.0003
+  batch_size:  6 #2 # 6 for block prediction 
+  lr: 0.001          #0.0003    # 0.001 for block prediction
   lr_patience: 100
   lr_warmup: 0
   lr_scheduler: 'cosine'
