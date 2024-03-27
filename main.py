@@ -10,6 +10,7 @@ from pard.parallel.transform import ToParallelBlocks
 from pard.parallel.transform import ToOneHot
 from pard.parallel.task import PredictBlockProperties, AutoregressiveDiffusion
 import pard.parallel.utils as parallel_utils
+from pard.utils import find_checkpoint_with_lowest_val_loss
 
 
 # --------------------------------------- input --------------------------------------------
@@ -169,7 +170,8 @@ if batched_sequential:
     cfg.handtune += '-BatchedSeq'
 else:
     cfg.handtune += '-Parallel'
-model_name = f'{cfg.dataset}.{cfg.diffusion.max_hops}hops.{cfg.handtune}.BlockID{int(cfg.model.use_absolute_blockid)}{int(cfg.model.use_relative_blockid)}.{cfg.model.norm}'+\
+model_name = f'{cfg.dataset}.{cfg.diffusion.max_hops}hops.{cfg.diffusion.num_node_virtual_types}-{cfg.diffusion.num_edge_virtual_types}typeadded.{cfg.handtune}'+\
+             f'.BlockID{int(cfg.model.use_absolute_blockid)}{int(cfg.model.use_relative_blockid)}.{cfg.model.norm}'+\
              f'.PreNorm={int(cfg.model.prenorm)}.H{cfg.model.hidden_size}.E{cfg.model.edge_hidden}.L{cfg.model.num_layers}-lr{cfg.train.lr}.{cfg.train.lr_scheduler}'
 diffusion_name = f'-ires{int(cfg.model.input_residual)}.blocktime{int(cfg.diffusion.blockwise_time)}.uni_noise{int(cfg.diffusion.uniform_noise)}'+\
                  f'.T{cfg.diffusion.num_steps}.{cfg.diffusion.noise_schedule_type}'+\
@@ -186,7 +188,7 @@ checkpoint_callback = ModelCheckpoint(dirpath=f"checkpoints/{cfg.task}/{model_na
 # check whether resume training
 resume_path = None
 if cfg.train.resume:
-    best_checkpoint_path = parallel_utils.find_checkpoint_with_lowest_val_loss(checkpoint_callback.dirpath)
+    best_checkpoint_path = find_checkpoint_with_lowest_val_loss(checkpoint_callback.dirpath)
     last_checkpoint_path = os.path.join(checkpoint_callback.dirpath, 'last.ckpt') 
     if os.path.exists(best_checkpoint_path) and cfg.train.resume_mode == 'best':
         print(f'Resume training from {best_checkpoint_path}...')

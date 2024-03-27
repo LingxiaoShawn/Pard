@@ -7,7 +7,7 @@ import torch
 import pickle
 from torch_geometric.loader import DataLoader
 
-from pard.parallel.utils import find_checkpoint_with_lowest_val_loss
+from pard.utils import find_checkpoint_with_lowest_val_loss
 from pard.parallel.task import AutoregressiveDiffusion, PredictBlockProperties
 from pard.dataset import DATA_INFO
 from pard.analysis.spectre_utils import SpectreSamplingMetrics
@@ -18,7 +18,7 @@ from moses.metrics.metrics import get_all_metrics
 torch.set_num_threads(20)
 
 def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, eval_mode='best', batch_size=128, train_max_hops=3):
-    assert eval_mode in ['best', 'last', 'all']
+    assert eval_mode in ['best', 'last', 'latest', 'all']
     logging.basicConfig(filename=os.path.join(diffusion_model_dir, 'generation_metric.log'), encoding='utf-8', level=logging.DEBUG)
     ### load dataset
     data_info_dict = DATA_INFO[dataset]
@@ -60,6 +60,8 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
         diffusion_model_paths = [os.path.join(diffusion_model_dir, file) for file in files_list if file.endswith('.ckpt')] 
     elif eval_mode == 'best':
         diffusion_model_paths = [find_checkpoint_with_lowest_val_loss(diffusion_model_dir)]
+    elif eval_mode == 'latest':
+        diffusion_model_paths = [find_checkpoint_with_lowest_val_loss(diffusion_model_dir, return_latest=True)]
     else:
         diffusion_model_paths = [os.path.join(diffusion_model_dir, 'last.ckpt')]
 
@@ -96,8 +98,9 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
                                                                                       generated_batch.edges,
                                                                                       generated_batch.nodes_blockid,
                                                                                       train_max_hops=train_max_hops))
-        logging.info(f'Percentage of graphs that have the same generation block path as training block path:',
-                      100*sum(block_id_same_with_training) / len(block_id_same_with_training))
+        logging.info('Percentage of graphs that have the same generation block path as training block path:')
+        percentage = 100*sum(block_id_same_with_training) / len(block_id_same_with_training)
+        logging.info(f'{percentage:.2f}%')
         print('Evaluating ...')
         ### evaluate 
         if atom_decoder is None:
@@ -156,11 +159,11 @@ if __name__ == '__main__':
     batch_size = 8
     train_max_hops = 1
     blocksize_model_dir = 'checkpoints/block_prediction/grid.1hops.ppgnTrans-Parallel.BlockID01.ln.PreNorm=1.H256.E48.L10-lr0.0003.cosine/'
-    diffusion_model_dir = 'checkpoints/local_denoising/grid.1hops.ppgnTrans-Parallel.BlockID01.ln.PreNorm=1.H256.E48.L10-lr0.0003.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
+    # diffusion_model_dir = 'checkpoints/local_denoising/grid.1hops.ppgnTrans-Parallel.BlockID01.ln.PreNorm=1.H256.E48.L10-lr0.0003.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
     diffusion_model_dir = 'checkpoints/local_denoising/grid.1hops.ppgnTrans-Parallel.BlockID01.ln.PreNorm=1.H256.E48.L10-lr0.0003.plateau-ires1.blocktime0.uni_noise0.T50.cosine.vlb1.ce0.1.combine=False/'
     
     # blocksize_model_dir = 'checkpoints/block_prediction/grid.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H96.E16.L6-lr0.0002.cosine/'
     # diffusion_model_dir = 'checkpoints/local_denoising/grid.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H96.E16.L6-lr0.0002.plateau-ires1.blocktime0.uni_noise0.T50.cosine.vlb1.ce0.1.combine=False/'
 
-    eval_mode = 'best'
+    eval_mode = 'latest'
     eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir, eval_mode, batch_size=batch_size, train_max_hops=train_max_hops)

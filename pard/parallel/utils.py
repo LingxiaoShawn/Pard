@@ -283,26 +283,3 @@ def prepare_targetblock_transforms(target_block_mask, block_size=None):
         return full
     return from_full_to_batch_targetblock, from_batch_targetblock_to_full, targetblock_padding_mask
 
-
-
-
-import os
-import re
-
-def find_checkpoint_with_lowest_val_loss(directory):
-    lowest_val_loss = float('inf')
-    best_checkpoint = None
-    # Regex to match the pattern in the filename and extract the loss value
-    pattern = re.compile(r'epoch=\d+-val_loss=([\d.]+)\.ckpt')
-
-    for filename in os.listdir(directory):
-        match = pattern.search(filename)
-        if match:
-            val_loss = float(match.group(1))
-            if val_loss < lowest_val_loss:
-                lowest_val_loss = val_loss
-                best_checkpoint = filename
-    if best_checkpoint is not None:
-        return os.path.join(directory, best_checkpoint)
-    else:
-        return "No matching checkpoint found."

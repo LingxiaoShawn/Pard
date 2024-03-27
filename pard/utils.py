@@ -112,3 +112,30 @@ def from_batch_onehot_to_list(nodes, edges):
     num_nodes = node_mask.sum(-1)
     return [(nodes[i][:num_nodes[i]].argmax(-1) , edges[i][:num_nodes[i], :num_nodes[i]].argmax(-1)) for i in range(len(num_nodes))] 
      
+
+import os, re
+def find_checkpoint_with_lowest_val_loss(directory, return_latest=False):
+    lowest_val_loss = float('inf')
+    largest_epoch = 0
+    best_checkpoint = None
+    latest_checkpoint = None
+    # Regex to match the pattern in the filename and extract the loss value
+    pattern = re.compile(r'epoch=([\d.]+)+-val_loss=([\d.]+)\.ckpt')
+
+    for filename in os.listdir(directory):
+        match = pattern.search(filename)
+        if match:
+            val_loss = float(match.group(2))
+            epoch = int(match.group(1))
+            if epoch > largest_epoch:
+                largest_epoch = epoch
+                latest_checkpoint = filename
+            if val_loss < lowest_val_loss:
+                lowest_val_loss = val_loss
+                best_checkpoint = filename
+    if return_latest and latest_checkpoint is not None:
+        return os.path.join(directory, latest_checkpoint)
+    elif best_checkpoint is not None:
+        return os.path.join(directory, best_checkpoint)
+    else:
+        return "No matching checkpoint found."
