@@ -94,8 +94,8 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
                                                                                       generated_batch.edges,
                                                                                       generated_batch.nodes_blockid,
                                                                                       train_max_hops=train_max_hops))
-        logging.info(f'Percentage of graphs that have the same generation block path as training block path: 
-                      {100*sum(block_id_same_with_training) / len(block_id_same_with_training)} %')
+        logging.info(f'Percentage of graphs that have the same generation block path as training block path:',
+                      f'{100*sum(block_id_same_with_training) / len(block_id_same_with_training)} %')
         print('Evaluating ...')
         ### evaluate 
         if atom_decoder is None:
@@ -126,12 +126,12 @@ if __name__ == '__main__':
     # blocksize_model_dir = 'checkpoints/block_prediction/planar.1hops.ppgnTrans.BlockID01.ln.PreNorm=1.H256.E32.L10-lr0.0001.plateau/'
     # diffusion_model_dir = 'checkpoints/local_denoising/planar.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H256.E32.L10-lr0.0002.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
 
-    device = 5
+    device = 3
     dataset = 'qm9'
     train_max_hops = 3
     batch_size = 1024
     blocksize_model_dir = 'checkpoints/block_prediction/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
-    diffusion_model_dir = 'checkpoints/local_denoising/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T100.cosine.vlb1.ce0.1.combine=False'
+    diffusion_model_dir = 'checkpoints/local_denoising/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T10.cosine.vlb1.ce0.1.combine=False'
 
     # device = 0
     # dataset = 'zinc250k'
