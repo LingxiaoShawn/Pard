@@ -770,7 +770,7 @@ class SpectreSamplingMetrics:
             nx_graph = nx.from_numpy_array(A)
             networkx_graphs.append(nx_graph)
 
-        np.savez('generated_adjs.npz', *adjacency_matrices)
+        # np.savez('generated_adjs.npz', *adjacency_matrices)
         to_log = {}
         if 'degree' in self.metrics_list:
             if local_rank == 0:
