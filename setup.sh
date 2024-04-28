@@ -1,14 +1,13 @@
-# # # create conda env
-# ENV=pt2new
-# CUDA=11.8
-# cuda=cu118
+# create conda env
+ENV=pt2
+CUDA=11.8
+cuda=cu118
 
+# ### python 3.8 is needed for molsets if you want to install molsets with pip
+conda create -n $ENV python=3.10 -y 
+conda activate $ENV
 
-# ### python 3.8 is needed for molsets
-# conda create -n $ENV python=3.8 -y 
-# conda activate $ENV
-
-# install pytorch 2.0
+# install pytorch 2.0+ (tested with 2.2)
 conda install pytorch torchvision torchaudio pytorch-cuda=$CUDA -c pytorch -c nvidia -y
 
 # install rdkit
@@ -33,4 +32,8 @@ pip install pyemd pygsp
 pip install einops
 
 
-pip install molsets # hard to install, better to just go the github and install manually
+# install molsets
+## if use python 3.8, you can try pip 
+pip install molsets
+## if use other versions, or you failed installation 
+- please install manually, https://github.com/molecularsets/moses#manually
