@@ -155,6 +155,7 @@ class ToParallelBlocks:
                 next_block_size=torch.tensor([block_size[l+1]]) if l+1<num_blocks else torch.tensor([0], dtype=torch.long),
                 next_block_degree=torch.tensor([block_degree[l+1]]) if l+1<num_blocks else  torch.tensor([0], dtype=torch.long),
             )
+        
         if self.to_sequential_list:
             # here we batch all partial graphs together
             graph_list = [get_until_ith_id(l) for l in range(num_blocks)]
