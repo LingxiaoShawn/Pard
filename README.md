@@ -1,4 +1,4 @@
-# Pard
+# Pard: Autoregressive + Diffusion 
 
 Official pytorch source code for 
 
