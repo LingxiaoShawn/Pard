@@ -630,6 +630,14 @@ class AutoregressiveDiffusion(L.LightningModule):
             block_size=initial_block_size.view(-1,1),  # B x 1
         )
         return dense_batch
+    
+    @torch.no_grad()
+    def compute_log_probability(self, batch):
+
+        # Compute sum of log probabilities of predicting next block size + the log probability of initial block size
+
+        # Compute sum of log probabilities of predicting next block for all diffusion steps 
+        pass 
 
 import torch.nn.functional as F    
 def add_block_to_dense_batch(dense_batch, added_block_size, added_block_degree):
