@@ -65,6 +65,8 @@ def compute_higher_order_degrees(edge_index, num_nodes, num_hops=2):
     1. for each node, get the distance-to-this-node vector, then sum over all weighted distances. By d * (num_nodes**(max_degree - d))
     """
     x = torch.ones(num_nodes, dtype=torch.long, device=edge_index.device)
+    if num_hops == 0:
+        return x 
     weighted_degrees = 0 
     for _ in range(num_hops):
         scatter(x[edge_index[0]], edge_index[1], dim=0, reduce="sum", out=x)
