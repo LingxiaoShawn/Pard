@@ -13,16 +13,16 @@
 # when hops = 0, it reduces to just a single block, hence it's similar to DiGress. 
 # For this ablation, let's control the total number of denosing steps to be 140. 
 ## Part 1: block_prediction
-python main.py device 0 dataset qm9 task block_prediction diffusion.max_hops 0 
-python main.py device 1 dataset qm9 task block_prediction diffusion.max_hops 1 
-python main.py device 2 dataset qm9 task block_prediction diffusion.max_hops 2 
-python main.py device 3 dataset qm9 task block_prediction diffusion.max_hops 3 
-python main.py device 4 dataset qm9 task block_prediction diffusion.max_hops 4 
-python main.py device 5 dataset qm9 task block_prediction diffusion.max_hops 5 
+# python main.py device 0 dataset qm9 task block_prediction diffusion.max_hops 0 
+python main.py device 3 dataset qm9 task block_prediction diffusion.max_hops 1 &
+python main.py device 4 dataset qm9 task block_prediction diffusion.max_hops 2 &
+# python main.py device 3 dataset qm9 task block_prediction diffusion.max_hops 3 
+python main.py device 5 dataset qm9 task block_prediction diffusion.max_hops 4 &
+# python main.py device 5 dataset qm9 task block_prediction diffusion.max_hops 5 
 ## Part 2: diffusion block_prediction
-python main.py device 0 dataset qm9 task local_denoising diffusion.max_hops 0 diffusion.num_steps 140 # Number of blocks: 1,  max block size: 30, max block degree: 5 | Average number of blocks in training set: 1.0
-python main.py device 1 dataset qm9 task local_denoising diffusion.max_hops 1 diffusion.num_steps 32  # Number of blocks: 8,  max block size: 21, max block degree: 4 | Average number of blocks in training set: 4.316677421545986
-python main.py device 2 dataset qm9 task local_denoising diffusion.max_hops 2 diffusion.num_steps 25  # Number of blocks: 10, max block size: 21, max block degree: 4 | Average number of blocks in training set: 5.656101412851514
-python main.py device 3 dataset qm9 task local_denoising diffusion.max_hops 3 diffusion.num_steps 20  # Number of blocks: 13, max block size: 19, max block degree: 4 | Average number of blocks in training set: 7.200592650455101
-python main.py device 4 dataset qm9 task local_denoising diffusion.max_hops 4 diffusion.num_steps 18  # Number of blocks: 15, max block size: 19, max block degree: 4 | Average number of blocks in training set: 7.752029275913599
-python main.py device 5 dataset qm9 task local_denoising diffusion.max_hops 5 diffusion.num_steps 18  # Number of blocks: 15, max block size: 19, max block degree: 4 | Average number of blocks in training set: 7.838498505637821
+# python main.py device 0 dataset qm9 task local_denoising diffusion.max_hops 0 diffusion.num_steps 140 # Number of blocks: 1,  max block size: 30, max block degree: 5 | Average number of blocks in training set: 1.0
+# python main.py device 1 dataset qm9 task local_denoising diffusion.max_hops 1 diffusion.num_steps 32  # Number of blocks: 8,  max block size: 21, max block degree: 4 | Average number of blocks in training set: 4.316677421545986
+# python main.py device 2 dataset qm9 task local_denoising diffusion.max_hops 2 diffusion.num_steps 25  # Number of blocks: 10, max block size: 21, max block degree: 4 | Average number of blocks in training set: 5.656101412851514
+# python main.py device 3 dataset qm9 task local_denoising diffusion.max_hops 3 diffusion.num_steps 20  # Number of blocks: 13, max block size: 19, max block degree: 4 | Average number of blocks in training set: 7.200592650455101
+# python main.py device 4 dataset qm9 task local_denoising diffusion.max_hops 4 diffusion.num_steps 18  # Number of blocks: 15, max block size: 19, max block degree: 4 | Average number of blocks in training set: 7.752029275913599
+# python main.py device 5 dataset qm9 task local_denoising diffusion.max_hops 5 diffusion.num_steps 18  # Number of blocks: 15, max block size: 19, max block degree: 4 | Average number of blocks in training set: 7.838498505637821
