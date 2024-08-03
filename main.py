@@ -86,7 +86,7 @@ if cfg.task == 'block_prediction':
         #------------- params for models -----------------
         one_hot.num_node_classes, 
         one_hot.num_edge_classes, 
-        max_num_blocks + 3, # add 5 for tolerance of nn.embedding
+        max_num_blocks + 3, # add 3 for tolerance of nn.embedding
         max_block_size,
         max_block_degree,
         channels=cfg.model.hidden_size, 
