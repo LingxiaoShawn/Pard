@@ -149,14 +149,17 @@ class TransformerBlock(nn.Module):
         return X, E
     
 class PPGNTransformerBlock(nn.Module):
-    def __init__(self, node_channel, edge_channel, n_head, norm='bn', add_transpose=False, prenorm=True):
+    def __init__(self, node_channel, edge_channel, n_head, norm='bn', add_transpose=False, prenorm=True, transformer_only=False):
         super().__init__()
-        self.ppgn = PPGNBlock(edge_channel, norm=norm, add_transpose=add_transpose, prenorm=prenorm, simplify=False)
+        self.transformer_only = transformer_only
+        if not transformer_only:
+            self.ppgn = PPGNBlock(edge_channel, norm=norm, add_transpose=add_transpose, prenorm=prenorm, simplify=False)
         self.transformer = TransformerBlock(node_channel, edge_channel, n_head, norm=norm, prenorm=prenorm)
 
     def forward(self, X, E, edge_mask, edge_causal_mask):
         X, E = self.transformer(X, E, edge_mask, edge_causal_mask)
-        E = self.ppgn(E, edge_mask, edge_causal_mask)
+        if not self.transformer_only:
+            E = self.ppgn(E, edge_mask, edge_causal_mask)
         return X, E
 
 class PPGN(nn.Module):
@@ -179,9 +182,9 @@ class PPGN(nn.Module):
         return x # B x N x N x D
     
 class PPGNTransformer(nn.Module):
-    def __init__(self, node_channel, edge_channel, num_layers, n_head, norm='bn', add_transpose=False, prenorm=True):
+    def __init__(self, node_channel, edge_channel, num_layers, n_head, norm='bn', add_transpose=False, prenorm=True, transformer_only=False):
         super().__init__()
-        self.blocks = nn.ModuleList([PPGNTransformerBlock(node_channel, edge_channel, n_head, norm=norm, add_transpose=add_transpose, prenorm=prenorm) for _ in range(num_layers)])
+        self.blocks = nn.ModuleList([PPGNTransformerBlock(node_channel, edge_channel, n_head, norm=norm, add_transpose=add_transpose, prenorm=prenorm, transformer_only=transformer_only) for _ in range(num_layers)])
         self.node_norm = MaskedBatchNorm(node_channel, channel_first=False) if norm == 'bn' else MaskedLayerNorm(node_channel, channel_first=False)
         self.edge_norm = MaskedBatchNorm(edge_channel, channel_first=False) if norm == 'bn' else MaskedLayerNorm(edge_channel, channel_first=False)
         self.node_mlp = MLP(node_channel, node_channel, channel_first=False)

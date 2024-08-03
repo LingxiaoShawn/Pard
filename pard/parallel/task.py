@@ -20,7 +20,7 @@ class PredictBlockProperties(L.LightningModule):
             max_block_size,
             max_block_degree,
             channels, num_layers, norm='bn', add_transpose=False, prenorm=True, # PPGN parameters
-            edge_channels=0, n_head=0,         # PPGNTransformer's additional parameters 
+            edge_channels=0, n_head=0, transformer_only=False,                  # PPGNTransformer's additional parameters 
             lr=0.001, wd=0.01, lr_patience=10, lr_warmup=5, lr_scheduler='plateau', lr_epochs=100, # optim parameters
             use_relative_blockid=False, # use relative ID can help reduce overfitting, as the absolute id is not meaningful
             use_absolute_blockid=True, # use absolute ID
@@ -40,7 +40,7 @@ class PredictBlockProperties(L.LightningModule):
 
         if edge_channels > 0 and n_head > 0:
             self.use_transformer = True 
-            self.net = PPGNTransformer(channels, edge_channels, num_layers, n_head, norm=norm, add_transpose=add_transpose, prenorm=prenorm)
+            self.net = PPGNTransformer(channels, edge_channels, num_layers, n_head, norm=norm, add_transpose=add_transpose, prenorm=prenorm, transformer_only=transformer_only)
         else:
             self.use_transformer = False  
             self.node_edge_combiner = NodeEdgeCombiner(channels, channels, channels)
@@ -246,8 +246,8 @@ class AutoregressiveDiffusion(L.LightningModule):
             num_layers, 
             norm='bn',
             prenorm=True,  
-            add_transpose=False,               # PPGN parameters
-            edge_channels=0, n_head=0,         # PPGNTransformer's additional parameters 
+            add_transpose=False,                                # PPGN parameters
+            edge_channels=0, n_head=0, transformer_only=False,  # PPGNTransformer's additional parameters 
             use_input=False,
             #------------- params for training --------------
             lr=0.001, wd=0.01, lr_patience=10, lr_warmup=5, lr_scheduler='plateau', lr_epochs=100,# optim parameters
@@ -293,7 +293,7 @@ class AutoregressiveDiffusion(L.LightningModule):
         
         if edge_channels > 0 and n_head > 0:
             self.use_transformer = True 
-            self.net = PPGNTransformer(channels, edge_channels, num_layers, n_head, norm=norm, add_transpose=add_transpose, prenorm=prenorm)
+            self.net = PPGNTransformer(channels, edge_channels, num_layers, n_head, norm=norm, add_transpose=add_transpose, prenorm=prenorm, transformer_only=transformer_only)
         else:
             self.use_transformer = False  
             self.node_edge_combiner = NodeEdgeCombiner(channels, channels, channels)

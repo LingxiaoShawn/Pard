@@ -96,6 +96,7 @@ if cfg.task == 'block_prediction':
         prenorm=cfg.model.prenorm,
         edge_channels=cfg.model.edge_hidden, 
         n_head=cfg.model.num_heads,              # PPGNTransformer's additional parameters 
+        transformer_only=cfg.model.transformer_only, 
         #------------- params for training -----------------
         lr=cfg.train.lr, 
         wd=cfg.train.wd, 
@@ -122,6 +123,7 @@ elif cfg.task == 'local_denoising':
         prenorm=cfg.model.prenorm,
         edge_channels=cfg.model.edge_hidden, 
         n_head=cfg.model.num_heads,              # PPGNTransformer's additional parameters 
+        transformer_only=cfg.model.transformer_only, 
         use_input=cfg.model.input_residual,      # AutoregressiveDiffusion's additional parameters
         #------------- params for training -----------------
         lr=cfg.train.lr, 
@@ -178,6 +180,8 @@ diffusion_name = f'-ires{int(cfg.model.input_residual)}.blocktime{int(cfg.diffus
                  f'.vlb{int(not cfg.diffusion.ce_only)}.ce{int(cfg.diffusion.ce_only)+cfg.diffusion.ce_coeff}.combine={cfg.diffusion.combine_training}'
 if cfg.task == 'local_denoising':
     model_name = model_name + diffusion_name
+if cfg.model.transformer_only:
+    model_name = 'TF-' + model_name
 lr_monitor = LearningRateMonitor(logging_interval='epoch')
 checkpoint_callback = ModelCheckpoint(dirpath=f"checkpoints/{cfg.task}/{model_name}", 
                                       monitor="val_loss", 

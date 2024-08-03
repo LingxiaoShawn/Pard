@@ -59,7 +59,8 @@ def set_cfg(cfg):
     cfg.model.add_transpose = True
     cfg.model.prenorm = True 
     cfg.model.num_heads = 8
-    cfg.model.edge_hidden = 32
+    cfg.model.edge_hidden = 32                     # 0 means use PPGN only
+    cfg.model.transformer_only = False             # whether only use transformer, when edge_hidden > 0, this will work, can increase edge_hidden abit. 
     cfg.model.extra_feature = False                # whether to use extra structure feature (cycle, eigen)
     cfg.model.encode_block = True
     cfg.model.input_residual = True
