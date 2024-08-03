@@ -764,7 +764,7 @@ class SpectreSamplingMetrics:
             print("Building networkx graphs...")
         for graph in generated_graphs:
             node_types, edge_types = graph
-            A = edge_types.bool().cpu().numpy()
+            A = edge_types.bool().cpu().numpy() # here ignores edge labels 
             adjacency_matrices.append(A)
 
             nx_graph = nx.from_numpy_array(A)
@@ -787,15 +787,6 @@ class SpectreSamplingMetrics:
         # eigval_stats(eig_ref_list, eig_pred_list, max_eig=20, is_parallel=True, compute_emd=False)
         # spectral_filter_stats(eigvec_ref_list, eigval_ref_list, eigvec_pred_list, eigval_pred_list, is_parallel=False,
         #                       compute_emd=False)          # This is the one called wavelet
-        if 'nspdk' in self.metrics_list:
-            if local_rank == 0:
-                print("Computing nspdk mmd stats...")
-            graph_pred_list_remove_empty = [G for G in networkx_graphs if not G.number_of_nodes() == 0]
-            mmd_dist = compute_nspdk_mmd(reference_graphs, graph_pred_list_remove_empty, metric='nspdk', is_hist=False, n_jobs=20)
-            to_log['nspdk'] = mmd_dist
-            if wandb.run:
-                wandb.run.summary['nspdk'] = mmd_dist
-
         if 'spectre' in self.metrics_list:
             if local_rank == 0:
                 print("Computing spectre stats...")
@@ -868,25 +859,6 @@ class SpectreSamplingMetrics:
 
     def reset(self):
         pass
-
-
-# add NSPDK metric  
-from sklearn.metrics.pairwise import pairwise_kernels
-from .gdss_utils import vectorize
-
-def compute_nspdk_mmd(samples1, samples2, metric, is_hist=True, n_jobs=None):
-    def kernel_compute(X, Y=None, is_hist=True, metric='linear', n_jobs=None):
-        X = vectorize(X, complexity=4, discrete=True)
-        if Y is not None:
-            Y = vectorize(Y, complexity=4, discrete=True)
-        return pairwise_kernels(X, Y, metric='linear', n_jobs=n_jobs)
-
-    X = kernel_compute(samples1, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
-    Y = kernel_compute(samples2, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
-    Z = kernel_compute(samples1, Y=samples2, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
-
-    return np.average(X) + np.average(Y) - 2 * np.average(Z)
-
 
 class EMDSamplingMetrics(SpectreSamplingMetrics):
     def __init__(self, original_loaders):

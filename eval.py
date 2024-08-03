@@ -43,8 +43,7 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
     else:
         train_smiles = original_datasets['train'].get_smiles(eval=False) if dataset in ['qm9', 'zinc250k'] else None 
         test_smiles = original_datasets['test'].get_smiles(eval=False) if dataset in ['qm9', 'zinc250k'] else None
-        metric = BasicMolecularMetrics(atom_decoder, train_smiles) 
-        metric_nspdk = SpectreSamplingMetrics(original_loaders, metrics_list=['nspdk'])
+        metric = BasicMolecularMetrics(atom_decoder, train_smiles, test_smiles) 
 
     ### load blocksize model
     combine_training = True 
@@ -109,15 +108,10 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
             with open(os.path.join(diffusion_model_dir, 'generated_graphs.pkl'), 'wb') as f: 
                 pickle.dump(dense_graph_list, f)
         else:
-            result = []
-            if dataset in ['qm9', 'zinc250k']:
-                nspdk_scores = metric_nspdk(dense_graph_list)
-                result += [nspdk_scores]
-
             validity_dict, dic, unique_smiles, all_smiles = metric(dense_graph_list)
             # save generated smiles
             np.save(os.path.join(diffusion_model_dir, 'generated_smiles.npy'), np.array(all_smiles))
-            result += [validity_dict, dic]
+            result = [validity_dict, dic]
 
             scores = get_all_metrics(gen=all_smiles, k=None, test=test_smiles, train=train_smiles)
             logging.info('-'*50 )
@@ -139,18 +133,19 @@ if __name__ == '__main__':
     # blocksize_model_dir = 'checkpoints/block_prediction/planar.1hops.ppgnTrans.BlockID01.ln.PreNorm=1.H256.E32.L10-lr0.0001.plateau/'
     # diffusion_model_dir = 'checkpoints/local_denoising/planar.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H256.E32.L10-lr0.0002.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
 
-    # device = 3
-    # dataset = 'qm9'
-    # train_max_hops = 3
-    # batch_size = 1024
-    # blocksize_model_dir = 'checkpoints/block_prediction/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
-    # diffusion_model_dir = 'checkpoints/local_denoising/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T10.cosine.vlb1.ce0.1.combine=False'
+    device = 4
+    dataset = 'qm9'
+    train_max_hops = 3
+    batch_size = 1024
+    blocksize_model_dir = 'checkpoints/block_prediction/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
+    diffusion_model_dir = 'checkpoints/local_denoising/qm9.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T20.cosine.vlb1.ce0.1.combine=False'
 
-    # device = 0
+    # device = 4
+    # train_max_hops = 3
     # dataset = 'zinc250k'
     # batch_size = 1024
-    # blocksize_model_dir = 'checkpoints/block_prediction/zinc250k.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
-    # diffusion_model_dir = 'checkpoints/local_denoising/zinc250k.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
+    # blocksize_model_dir = 'ckpts-old/block_prediction/zinc250k.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine'
+    # diffusion_model_dir = 'ckpts-old/local_denoising/zinc250k.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0004.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
 
     # device = 4
     # dataset = 'moses'
@@ -159,16 +154,16 @@ if __name__ == '__main__':
     # # diffusion_model_dir = 'checkpoints/local_denoising/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0002.plateau-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=True/'
     # diffusion_model_dir = 'checkpoints/local_denoising/moses.3hops.ppgnTrans-Parallel.BlockID11.bn.PreNorm=1.H256.E64.L8-lr0.0002.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False.resume/'
 
-    device = 3
-    dataset = 'grid'
-    batch_size = 8
-    train_max_hops = 1
+    # device = 3
+    # dataset = 'grid'
+    # batch_size = 8
+    # train_max_hops = 1
     # blocksize_model_dir = 'checkpoints/block_prediction/grid.1hops.ppgnTrans-Parallel.BlockID01.ln.PreNorm=1.H256.E48.L10-lr0.0003.cosine/'
     # diffusion_model_dir = 'checkpoints/local_denoising/grid.1hops.ppgnTrans-Parallel.BlockID01.ln.PreNorm=1.H256.E48.L10-lr0.0003.cosine-ires1.blocktime0.uni_noise1.T50.cosine.vlb1.ce0.1.combine=False/'
     # diffusion_model_dir = 'checkpoints/local_denoising/grid.1hops.ppgnTrans-Parallel.BlockID01.ln.PreNorm=1.H256.E48.L10-lr0.0003.plateau-ires1.blocktime0.uni_noise0.T50.cosine.vlb1.ce0.1.combine=False/'
     
-    blocksize_model_dir = 'checkpoints/block_prediction/grid.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H96.E16.L6-lr0.0002.cosine/'
-    diffusion_model_dir = 'checkpoints/local_denoising/grid.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H96.E16.L6-lr0.0002.plateau-ires1.blocktime0.uni_noise0.T50.cosine.vlb1.ce0.1.combine=False/'
+    # blocksize_model_dir = 'checkpoints/block_prediction/grid.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H96.E16.L6-lr0.0002.cosine/'
+    # diffusion_model_dir = 'checkpoints/local_denoising/grid.1hops.ppgnTrans-BatchedSeq.BlockID01.ln.PreNorm=1.H96.E16.L6-lr0.0002.plateau-ires1.blocktime0.uni_noise0.T50.cosine.vlb1.ce0.1.combine=False/'
 
-    eval_mode = 'latest'
+    eval_mode = 'best'
     eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir, eval_mode, batch_size=batch_size, train_max_hops=train_max_hops)

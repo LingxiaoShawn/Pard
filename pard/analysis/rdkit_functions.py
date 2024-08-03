@@ -2,6 +2,8 @@ import numpy as np
 import torch
 import re
 import wandb
+
+from .mol_utils import smiles_to_mols, mols_to_nx
 try:
     from rdkit import Chem
     print("Found rdkit, all good")
@@ -25,10 +27,11 @@ ATOM_VALENCY = {6: 4, 7: 3, 8: 2, 9: 1, 15: 3, 16: 2, 17: 1, 35: 1, 53: 1}
 
 
 class BasicMolecularMetrics:
-    def __init__(self, atom_decoder, train_smiles=None):
+    def __init__(self, atom_decoder, train_smiles=None, test_smiles=None):
         self.atom_decoder = atom_decoder
         # Retrieve dataset smiles only for qm9 currently.
         self.dataset_smiles_list = train_smiles
+        self.test_smiles_list = None # there is a bug in nspdk computation, so we skip it for now. 
         self.remove_h = atom_decoder[0] != 'H' 
 
     def compute_validity(self, generated):
@@ -36,9 +39,11 @@ class BasicMolecularMetrics:
         valid = []
         num_components = []
         all_smiles = []
+        all_mols = []
         for graph in generated:
             atom_types, edge_types = graph
             mol = build_molecule(atom_types, edge_types, self.atom_decoder)
+            all_mols.append(mol)
             smiles = mol2smiles(mol)
             try:
                 mol_frags = Chem.rdmolops.GetMolFrags(mol, asMols=True, sanitizeFrags=True)
@@ -61,12 +66,22 @@ class BasicMolecularMetrics:
             else:
                 all_smiles.append(None)
 
-        return valid, len(valid) / len(generated), np.array(num_components), all_smiles
+        return valid, len(valid) / len(generated), np.array(num_components), all_smiles, all_mols
 
     def compute_uniqueness(self, valid):
         """ valid: list of SMILES strings."""
         return list(set(valid)), len(set(valid)) / len(valid)
-
+    
+    def compute_nspdk(self, mols):
+        if self.test_smiles_list is None:
+            print("Test dataset smiles is None, nspd computation skipped")
+            return 1
+        test_mols = smiles_to_mols(self.test_smiles_list)
+        test_nx = mols_to_nx(test_mols)
+        generated_nx = mols_to_nx(mols)
+        nspdk_mmd_dist = compute_nspdk_mmd(test_nx, generated_nx, metric='nspdk', is_hist=False, n_jobs=20)
+        return nspdk_mmd_dist
+        
     def compute_novelty(self, unique):
         num_novel = 0
         novel = []
@@ -99,7 +114,7 @@ class BasicMolecularMetrics:
 
     def evaluate(self, generated):
         """ generated: list of pairs (atom_types: n , edge_types: n x n) """
-        valid, validity, num_components, all_smiles = self.compute_validity(generated)
+        valid, validity, num_components, all_smiles, all_mols = self.compute_validity(generated)
         nc_mu = num_components.mean() if len(num_components) > 0 else 0
         nc_min = num_components.min() if len(num_components) > 0 else 0
         nc_max = num_components.max() if len(num_components) > 0 else 0
@@ -121,7 +136,9 @@ class BasicMolecularMetrics:
             novelty = -1.0
             uniqueness = 0.0
             unique = []
-        return ([validity, relaxed_validity, uniqueness, novelty], 
+
+        nspdk = self.compute_nspdk(all_mols)
+        return ([validity, relaxed_validity, uniqueness, novelty, nspdk], 
                 dict(nc_min=nc_min, nc_max=nc_max, nc_mu=nc_mu), unique, all_smiles)
     
     def __call__(self, molecule_list):
@@ -157,7 +174,7 @@ class BasicMolecularMetrics:
         unique_smiles = rdkit_metrics[-2]
         nc = rdkit_metrics[1]
         dic = {'Validity': rdkit_metrics[0][0], 'Relaxed Validity': rdkit_metrics[0][1],
-            'Uniqueness': rdkit_metrics[0][2], 'Novelty': rdkit_metrics[0][3],
+            'Uniqueness': rdkit_metrics[0][2], 'Novelty': rdkit_metrics[0][3], 'GDSS_NSPDK': rdkit_metrics[0][4],
             'nc_max': nc['nc_max'], 'nc_mu': nc['nc_mu']}
         if wandb.run:
             wandb.log(dic)
@@ -372,3 +389,21 @@ def compute_molecular_metrics(molecule_list, train_smiles, atom_decoder, remove_
         wandb.log(dic)
 
     return stability_dict, rdkit_metrics, all_smiles
+
+
+
+from sklearn.metrics.pairwise import pairwise_kernels
+from .gdss_utils import vectorize
+
+def compute_nspdk_mmd(samples1, samples2, metric, is_hist=True, n_jobs=None):
+    def kernel_compute(X, Y=None, is_hist=True, metric='linear', n_jobs=None):
+        X = vectorize(X, complexity=4, discrete=True)
+        if Y is not None:
+            Y = vectorize(Y, complexity=4, discrete=True)
+        return pairwise_kernels(X, Y, metric='linear', n_jobs=n_jobs)
+
+    X = kernel_compute(samples1, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
+    Y = kernel_compute(samples2, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
+    Z = kernel_compute(samples1, Y=samples2, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
+
+    return np.average(X) + np.average(Y) - 2 * np.average(Z)
