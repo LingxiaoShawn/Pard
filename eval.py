@@ -25,18 +25,17 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
     atom_decoder = data_info_dict.get('atom_decoder', None)
     metric_class = data_info_dict.get('metric_class', None)
     original_datasets = {split:data_info_dict['class'](**(data_info_dict['default_args'] | {'split':split})) for split in ['train', 'val', 'test']}
-
+    original_loaders = {
+        split:  DataLoader(
+                    original_datasets[split], 
+                    batch_size=batch_size, 
+                    shuffle=True if split=='train' else False, 
+                    num_workers=12,
+                )
+        for split in ['train', 'val', 'test']
+    }
     ### build metrics 
     if atom_decoder is None:
-        original_loaders = {
-            split:  DataLoader(
-                        original_datasets[split], 
-                        batch_size=batch_size, 
-                        shuffle=True if split=='train' else False, 
-                        num_workers=12,
-                    )
-            for split in ['train', 'val', 'test']
-        }
         if metric_class is not None:
             metric = metric_class(original_loaders)
         else:
@@ -45,6 +44,7 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
         train_smiles = original_datasets['train'].get_smiles(eval=False) if dataset in ['qm9', 'zinc250k'] else None 
         test_smiles = original_datasets['test'].get_smiles(eval=False) if dataset in ['qm9', 'zinc250k'] else None
         metric = BasicMolecularMetrics(atom_decoder, train_smiles) 
+        metric_nspdk = SpectreSamplingMetrics(original_loaders, metrics_list=['nspdk'])
 
     ### load blocksize model
     combine_training = True 
@@ -109,11 +109,16 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
             with open(os.path.join(diffusion_model_dir, 'generated_graphs.pkl'), 'wb') as f: 
                 pickle.dump(dense_graph_list, f)
         else:
+            result = []
+            if dataset in ['qm9', 'zinc250k']:
+                nspdk_scores = metric_nspdk(dense_graph_list)
+                result += [nspdk_scores]
+
             validity_dict, dic, unique_smiles, all_smiles = metric(dense_graph_list)
             # save generated smiles
             np.save(os.path.join(diffusion_model_dir, 'generated_smiles.npy'), np.array(all_smiles))
+            result += [validity_dict, dic]
 
-            result = [validity_dict, dic]
             scores = get_all_metrics(gen=all_smiles, k=None, test=test_smiles, train=train_smiles)
             logging.info('-'*50 )
             logging.info(str(scores))

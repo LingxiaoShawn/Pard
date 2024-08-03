@@ -872,7 +872,7 @@ class SpectreSamplingMetrics:
 
 # add NSPDK metric  
 from sklearn.metrics.pairwise import pairwise_kernels
-from pard.analysis.gdss_utils import vectorize
+from .gdss_utils import vectorize
 
 def compute_nspdk_mmd(samples1, samples2, metric, is_hist=True, n_jobs=None):
     def kernel_compute(X, Y=None, is_hist=True, metric='linear', n_jobs=None):
