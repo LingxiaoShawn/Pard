@@ -34,3 +34,8 @@ pip install yacs tensorboard wandb pyemd pygsp einops
 # pip install molsets
 ## if use other versions, or you failed installation 
 # - please install manually, https://github.com/molecularsets/moses#manually
+
+
+# recompile orca 
+cd pard/analysis/orca
+g++ -O2 -std=c++11 -o orca orca.cpp
