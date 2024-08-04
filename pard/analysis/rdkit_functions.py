@@ -34,7 +34,7 @@ class BasicMolecularMetrics:
         self.atom_decoder = atom_decoder
         # Retrieve dataset smiles only for qm9 currently.
         self.dataset_smiles_list = train_smiles
-        self.test_smiles_list = None # there is a bug in nspdk computation, so we skip it for now. 
+        self.test_smiles_list = test_smiles # there is a bug in nspdk computation, so we skip it for now. 
         self.remove_h = atom_decoder[0] != 'H' 
 
     def compute_validity(self, generated):
