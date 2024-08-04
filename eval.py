@@ -102,11 +102,11 @@ def eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir=None, e
         logging.info(f'{percentage:.2f}%')
         print('Evaluating ...')
         ### evaluate 
+        with open(os.path.join(diffusion_model_dir, 'generated_graphs.pkl'), 'wb') as f: 
+            pickle.dump(dense_graph_list, f)
         if atom_decoder is None:
             result = metric(dense_graph_list)
             # save generated graphs 
-            with open(os.path.join(diffusion_model_dir, 'generated_graphs.pkl'), 'wb') as f: 
-                pickle.dump(dense_graph_list, f)
         else:
             validity_dict, dic, unique_smiles, all_smiles = metric(dense_graph_list)
             # save generated smiles

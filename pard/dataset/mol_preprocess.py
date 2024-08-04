@@ -20,8 +20,7 @@ from rdkit import Chem
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
-# sys.path.insert(0, os.getcwd())
-from pard.analysis.mol_utils import mols_to_nx, smiles_to_mols
+from pard.analysis.rdkit_functions import mols_to_nx, smiles_to_mols
 
 
 class GGNNPreprocessor(object):

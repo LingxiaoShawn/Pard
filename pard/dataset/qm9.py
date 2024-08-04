@@ -14,7 +14,7 @@ from torch_geometric.data import Data, InMemoryDataset, download_url, extract_zi
 from torch_geometric.utils import subgraph
 from torch_geometric.loader import DataLoader
 
-from pard.analysis.rdkit_functions import mol2smiles, build_molecule_with_partial_charges
+from pard.analysis.rdkit_functions import mol2smiles, build_molecule
 from pard.analysis.rdkit_functions import compute_molecular_metrics
 from pard.utils import to_dense
 
@@ -229,7 +229,7 @@ def compute_qm9_smiles(atom_decoder, train_dataloader, remove_h):
             molecule_list.append([atom_types, edge_types])
 
         for l, molecule in enumerate(molecule_list):
-            mol = build_molecule_with_partial_charges(molecule[0], molecule[1], atom_decoder)
+            mol = build_molecule(molecule[0], molecule[1], atom_decoder, relax=True)
             smile = mol2smiles(mol)
             if smile is not None:
                 mols_smiles.append(smile)

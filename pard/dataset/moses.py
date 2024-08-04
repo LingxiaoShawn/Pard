@@ -10,7 +10,7 @@ from typing import Any, Sequence
 import torch
 from tqdm import tqdm
 from torch_geometric.data import Data, InMemoryDataset, download_url
-from pard.analysis.rdkit_functions import mol2smiles, build_molecule_with_partial_charges
+from pard.analysis.rdkit_functions import mol2smiles, build_molecule
 from pard.utils import to_dense
 
 import pandas as pd
@@ -130,7 +130,7 @@ class MOSESDataset(InMemoryDataset):
                 assert X.size(0) == 1
                 atom_types = X[0]
                 edge_types = E[0]
-                mol = build_molecule_with_partial_charges(atom_types, edge_types, atom_decoder)
+                mol = build_molecule(atom_types, edge_types, atom_decoder, relax=True)
                 smiles = mol2smiles(mol)
                 if smiles is not None:
                     try:
