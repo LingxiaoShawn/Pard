@@ -1,9 +1,10 @@
-# Pard: Autoregressive + Diffusion 
+# Pard: Autoregressive + Diffusion (NeurIPS 2024)
 
 Official pytorch source code for 
 
 > [Pard: Permutation-Invariant Autoregressive Diffusion for Graph Generation](https://arxiv.org/abs/2402.03687)   
-> Lingxiao Zhao, Xueying Ding, Leman Akoglu
+> Lingxiao Zhao, Xueying Ding, Leman Akoglu   
+> NeurIPS 2024
 
 
 ## About
@@ -17,7 +18,26 @@ Pard **combines** <ins>autoregressive approach</ins> and <ins>diffusion model</i
 3. Similar to GPT whose all autoregressive steps are trained in parallel, Pard trains all blocks' conditional distribution in parallel with a shared diffusion model.  
 4. Pard's framework of AR + Diffusion is general, which can be used for other modality like text and image. Pard is the **first** AR + Diffusion model.
 
+### Ablation study: why combine AR + Diffusion ? 
+We have the parameter **Maxium hops** to control the degree of autoregressive in Pard, with **Maxium hops=0** representing diffusion ONLY and larger hops indicating more AR. The following ablation study on QM9 shows the benefit of AR + Diffusion. 
 
+| QM9                    | Pard (no AR) | Pard | Pard | Pard |
+|------------------------|--------------|------|------|------|
+| Maximum hops        | 0            | 1    | 2    | 3    |
+| Average number of blocks | 1      | 4.3  | 5.6  | 7.75 |
+| Diffusion steps per block | 140   | 32   | 25   | 20   |
+| Total diffusion steps     | 140   | 140  | 140  | 140  |
+| |
+| **Validity**            | 93.8         | **97.1** | 96.7 | 97.0 |
+| **Uniqueness**          | 96.9         | **96.5** | 96.2 | 96.1 |
+| **Mol stability**       | 76.4         | 86.1 | 85.4 | **86.3** |
+| **Atom Stability**      | 97.7         | 98.3 | 98.3 | **98.4** |
+
+**Takeaway:**
+* Huge performance jump by moving from no AR to AR + Diffusion.
+* More AR does not always better: AR is data hungry.
+* You can easily test diffusion only option ! Just set maxium hops = 0!
+  
 ## Installation
 See [setup.sh](https://github.com/LingxiaoShawn/Pard/blob/main/setup.sh) for installing the package. Most packages can be installed with newest version. If you meet a problem, submit an issue and we will try to update the coode for the newest environment.  
 
@@ -95,7 +115,6 @@ eval_model(device, dataset, diffusion_model_dir, blocksize_model_dir, eval_mode,
 ## Diffusion
 
 We use the most basic discrete-time diffusion method ([pard/diffusion.py](https://github.com/LingxiaoShawn/Pard/blob/main/pard/diffusion.py)) from [USD3](https://github.com/LingxiaoShawn/USD3). The diffusion code ([pard/diffusion.py](https://github.com/LingxiaoShawn/Pard/blob/main/pard/diffusion.py)) notation follows the USD3 paper exactly. The USD3 contains more sophisticated discrete diffusion, with improvement in both discrete-time and continuous-time case. We suggest people who want to use discrete diffusion to check out the code and the [paper](https://arxiv.org/pdf/2402.03701.pdf).
-
 
 
 ## Citation 
